@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model categorias {
+  categoria_id   Int        @id @unique(map: "categoria_id") @default(autoincrement())
+  categoria_nome String     @db.VarChar(50)
+  produtos       produtos[]
+}
+
+model enderecos {
+  endereco_id         Int        @id @unique(map: "endereco_id") @default(autoincrement())
+  enredeco_logradouro String     @db.VarChar(50)
+  endereco_bairro     String     @db.VarChar(50)
+  enredeco_cidade     String     @db.VarChar(50)
+  endereco_estado     String     @db.VarChar(50)
+  endereco_cep        String     @db.VarChar(10)
+  usuarios            usuarios[]
+}
+
+model marcas {
+  marca_id   Int        @id @unique(map: "marca_id") @default(autoincrement())
+  marca_nome String     @db.VarChar(50)
+  produtos   produtos[]
+}
+
+model produtos {
+  produtos_id      Int        @id @unique(map: "produtos_id") @default(autoincrement())
+  produto_nome     String     @db.VarChar(50)
+  produto_preco    Float
+  produto_desconto Int
+  produto_imagem   String     @db.VarChar(255)
+  marca_id         Int
+  categoria_id     Int
+  marcas           marcas     @relation(fields: [marca_id], references: [marca_id], onUpdate: Restrict, map: "produtos_fk5")
+  categorias       categorias @relation(fields: [categoria_id], references: [categoria_id], onUpdate: Restrict, map: "produtos_fk6")
+
+  @@index([marca_id], map: "produtos_fk5")
+  @@index([categoria_id], map: "produtos_fk6")
+}
+
+model usuarios {
+  usuario_id       Int       @id @unique(map: "usuario_id") @default(autoincrement())
+  usuario_nome     String    @db.VarChar(100)
+  usuario_senha    String    @db.VarChar(255)
+  usuario_email    String    @unique(map: "usuario_email") @db.VarChar(100)
+  usuario_telefone String    @db.VarChar(20)
+  usuario_cpf      Int
+  endereco_id      Int
+  enderecos        enderecos @relation(fields: [endereco_id], references: [endereco_id], onUpdate: Restrict, map: "usuarios_fk6")
+
+  @@index([endereco_id], map: "usuarios_fk6")
+}
