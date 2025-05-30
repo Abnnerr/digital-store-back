@@ -1,27 +1,27 @@
+const { buscarUsuarios, criarUsuario, editarUsuarios, apagarUsuario, } = require("../controller/usuariosController")
 const { executarSQL } = require("../services")
 
 const router = require("express").Router()
 
 
 router.get("/", async (req, res) => {
-    res.send(await executarSQL("SELECT * FROM produtos;"))
+    res.send(await buscarUsuarios())
 })
 
-router.post("/", (req, res) => {
-    res.send('cria um usuario')
+router.get("/:id", async (req, res) => {
+    res.send(await buscarUsuarios(req.params.id))
+})
+router.post("/", async (req, res) => {
+    res.send(await criarUsuario(req.body))
 })
 
-router.put("/:id",  async (req, res) => {
-    res.send(`edita um usuario com o id: ${req.params.id}`)
-    res.send( await executarSQL(`SELECT produtos_id FROM produtos`))
+router.put("/:id", async (req, res) => {
+    res.send(await editarUsuarios(req.params.id, req.body))
 })
 
-router.get("/:id", (req, res) => {
-    res.send(`busca o usuario com o id: ${req.params.id}`)
-})
 
 router.delete("/:id", (req, res) => {
-    res.send(`apaga um usuario com o id: ${req.params.id}`)
+    res.send(apagarUsuario(req.params.id))
 })
 
 

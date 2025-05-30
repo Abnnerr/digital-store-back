@@ -5,6 +5,7 @@ const port = 8000;
 
 const usuariosRoutes = require("./src/routes/usuarioRoutes")
 const produtosRoutes = require("./src/routes/produtosRoutes")
+
 app.use(express.json())
 app.use("/usuarios",usuariosRoutes);
 app.use("/produtos",produtosRoutes);
