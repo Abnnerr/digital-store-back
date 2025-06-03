@@ -1,4 +1,7 @@
 const { prisma } = require("../services");
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+const jwt = require('jsonwebtoken');
 
 async function buscarUsuarios() {
 
@@ -25,11 +28,15 @@ async function buscarUmUsuario(id) {
         }
     }
 }
-async function criarUsuario(data) {
+async function criarUsuario(dados) {
     // return await executarSQL(`INSERT INTO Usuarios(produto_nome, produto_preco, produto_desconto, produto_imagem, marca_id, categoria_id) VALUES ('${dados.produto_nome}', ${dados.produto_preco, dados.produto_desconto})`)
+
     try {
+        let senhaCriptografada = await bcrypt.hash(dados.usuario_senha, saltRounds)
+        let cpfCriptograda = await bcrypt.hash(dados.usuario_cpf, saltRounds)
+        dados = { ...dados, usuario_senha: senhaCriptografada, usuario_cpf: cpfCriptograda };
         return await prisma.usuarios.create({
-            data
+            data: dados
         })
     } catch (error) {
         return {
@@ -40,10 +47,12 @@ async function criarUsuario(data) {
 }
 async function editarUsuarios(id, dados) {
     // return await executarSQL(`UPDATE Usuarios SET produto_nome = '${dados.produto_nome}', produto_preco = ${dados.produto_preco}, produto_desconto = ${dados.produto_desconto}, produto_imagem = '${dados.produto_imagem}', marca_id = ${dados.marca_id}, categoria_id = ${dados.categoria_id} WHERE Usuarios_id = ${id};`);
-    
+
     try {
-        return await prisma.usuarios.update( {
-            where: {usuarios_id: Number(id)},
+        let senhaCriptografada = await bcrypt.hash(dados.usuario_senha, saltRounds)
+        dados = { ...dados, usuario_senha: senhaCriptografada };
+        return await prisma.usuarios.update({
+            where: { usuario_id: Number(id) },
             data: dados
         })
     } catch (error) {
@@ -67,5 +76,35 @@ async function apagarUsuario(id) {
         }
     }
 }
+async function login(dados) {
+    try {
+        let usuario = await prisma.usuarios.findFirst({
+            where: {
+                usuario_email: dados.usuario_email
+            }
+        });
+        if (usuario) {
+            let senhaComparada = await bcrypt.compare(dados.usuario_senha, usuario.usuario_senha);
+            if (senhaComparada) {
+                let token = jwt.sign({ data: usuario.usuario_senha }, process.env.SEGREDO, { expiresIn: '1h' });
+                return {
+                    tipo: "success",
+                    mensagem: "Usuario logado!",
+                    token
+                }
+            }
+        }
+        return {
+            tipo: "warning",
+            mensagem: "usuário ou senha incorretos"
+        }
+    } catch (error) {
+        return {
+            tipo: "error",
+            mensagem: error.message
+        }
+    }
 
-module.exports = { buscarUsuarios, buscarUmUsuario, criarUsuario, editarUsuarios, apagarUsuario }
+}
+
+module.exports = { buscarUsuarios, buscarUmUsuario, criarUsuario, editarUsuarios, apagarUsuario, login }
