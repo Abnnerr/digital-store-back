@@ -33,8 +33,7 @@ async function criarUsuario(dados) {
 
     try {
         let senhaCriptografada = await bcrypt.hash(dados.usuario_senha, saltRounds)
-        let cpfCriptograda = await bcrypt.hash(dados.usuario_cpf, saltRounds)
-        dados = { ...dados, usuario_senha: senhaCriptografada, usuario_cpf: cpfCriptograda };
+        dados = { ...dados, usuario_senha: senhaCriptografada};
         return await prisma.usuarios.create({
             data: dados
         })
@@ -86,10 +85,11 @@ async function login(dados) {
         if (usuario) {
             let senhaComparada = await bcrypt.compare(dados.usuario_senha, usuario.usuario_senha);
             if (senhaComparada) {
-                let token = jwt.sign({ data: usuario.usuario_senha }, process.env.SEGREDO, { expiresIn: '1h' });
+                let token = jwt.sign({ data: usuario.usuario_senha}, process.env.SEGREDO, { expiresIn: '1h' });
                 return {
                     tipo: "success",
                     mensagem: "Usuario logado!",
+                    usuario,
                     token
                 }
             }

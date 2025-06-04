@@ -14,8 +14,8 @@ app.use(express.json())
 app.post("/login", async(req,res) => {
     res.send(await login(req.body))
 })
-app.use("/usuarios",rotaProtegida, usuariosRoutes);
-app.use("/produtos",rotaProtegida,produtosRoutes);
+app.use("/usuarios",usuariosRoutes);
+app.use("/produtos",produtosRoutes);
 app.use((req,res) => {
     res.status(404).send("Rota nao encontrado");
 })
